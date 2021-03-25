@@ -79,12 +79,12 @@ namespace Interfaces
             {
                 Console.Clear();
                 Rnd rnd = new Rnd(1, 30);
-                Rnd rnd_5 = new Rnd(1, 5);
+                Rnd rnd_5 = new Rnd(1, 6);
                 Rnd rnd_4 = new Rnd(1, 4);
                 const int maxY = 20;
                 const int maxX = 20;
                 const int aantalMonsters = 10;
-                const int aantalRock = 10;
+                const int aantalRock = 20;
                 const int aantalRockDestroyers = 10;
                 MapElement[,] playground = new MapElement[maxX,maxY];
 
@@ -139,7 +139,7 @@ namespace Interfaces
                 }
                 bool bGameExit = false;
                 bool bGewonnen = false;
-                string sExitMsg = "";
+                string sExitMsg = null;
                 int cursX;
                 int cursY;
                 int iMenu = 1;
@@ -157,8 +157,10 @@ namespace Interfaces
                     {
                         for (int j = 0; j < maxY; j++)
                         {
-                            if (playground[i, j] != null) 
+                            if (playground[i, j] != null)
+                            {
                                 playground[i, j].Draw();
+                            }
                         }
                     }
                     Console.SetCursorPosition(Console.WindowWidth / 2 - 46/2, maxX + 1);
@@ -172,77 +174,170 @@ namespace Interfaces
                             {
                                 switch(iMenu)
                                 {
-                                    case 1: player.MoveUp(); break;
-                                    case 2: player.MoveDown(); break;
+                                    case 1:
+                                        {
+                                            if (player.Location.X > 0)
+                                                if (playground[(player.Location.X-1), player.Location.Y] == null)
+                                                    player.MoveUp(); 
+                                        }                                            
+                                        break;
+                                    case 2:
+                                        {
+                                            if (player.Location.X < maxX-1)
+                                                if (playground[player.Location.X+1,player.Location.Y] == null)
+                                                    player.MoveDown(); 
+                                        }
+                                        break;
                                     case 3:
                                         {
-                                            player.MoveRight();
-                                            if (player.Location.Y == maxY)
-                                            {
-                                                bGameExit = true;
-                                                bGewonnen = true;
-                                                sExitMsg = "Je hebt gewonnen!";
-                                            }
-                                            break;
+                                            if (player.Location.Y < maxY-1)
+                                                if(playground[player.Location.X, player.Location.Y+1] == null)
+                                                {
+                                                    player.MoveRight();
+                                                    if (player.Location.Y == maxY-1)
+                                                    {
+                                                        bGameExit = true;
+                                                        bGewonnen = true;
+                                                        sExitMsg = "Je hebt gewonnen!";
+                                                    }
+                                                }
                                             
                                         }
-                                    case 4: player.MoveLeft(); break;
+                                        break;
+                                    case 4:  
+                                        {
+                                            if (player.Location.Y > 0)
+                                                if (playground[player.Location.X,player.Location.Y-1] == null)
+                                                        player.MoveLeft();
+                                        }
+                                        break;
                                     case 5:
                                         {
                                             player.Shoot(ConsoleColor.Red);
                                             playground[player.Location.X, player.Location.Y + 1] = null;
-                                            //playground[player.Location.X, player.Location.Y + 1].Location.drawChar = ' ';
                                         }
                                         break;
+
                                 }
-                            }else
+                            }
                             if (obj is RockDestroyer rockDestroyer)
                             {
-                                switch(rnd_5.RandomNumber())
+                                //int temp = rnd_5.RandomNumber();
+                                //{
+                                //    //if (temp > 4)
+                                //        //Console.ReadKey(true);
+                                //}
+                                switch (rnd_5.RandomNumber())
                                 {
-                                    case 1: rockDestroyer.MoveUp(); break;
-                                    case 2: rockDestroyer.MoveDown(); break;
-                                    case 3: rockDestroyer.MoveLeft(); break;
-                                    case 4: rockDestroyer.MoveRight(); break;
+                                    case 1:
+                                        {
+                                            if (rockDestroyer.Location.X > 0)
+                                                if (playground[rockDestroyer.Location.X-1,rockDestroyer.Location.Y]==null)
+                                                    rockDestroyer.MoveUp();
+                                        }
+                                        break;
+                                    case 2:
+                                        {
+                                            if (rockDestroyer.Location.X < maxX-1)
+                                                if (playground[rockDestroyer.Location.X+1,rockDestroyer.Location.Y] == null)
+                                                    rockDestroyer.MoveDown(); 
+                                        }
+                                        break;
+                                    case 3:
+                                        {
+                                        if (rockDestroyer.Location.Y > 0)
+                                            if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y-1] == null)
+                                                rockDestroyer.MoveLeft(); 
+                                        }
+                                        break;
+                                    case 4:
+                                        {
+                                        if (rockDestroyer.Location.Y < maxY-1)
+                                            if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y+1] == null)
+                                                rockDestroyer.MoveRight(); 
+                                        }
+                                        break;
                                     case 5:
                                         {
-                                            rockDestroyer.Shoot(ConsoleColor.Red);
+                                            if (rockDestroyer.Location.Y < maxY-1)
+                                                if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y+1] != null)
+                                                {
+                                                    rockDestroyer.Shoot(ConsoleColor.Red);
 
-                                            if (playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] is Player playerIsTarget)
-                                            {
-                                                if (playerIsTarget.Levens > 1)
-                                                {
-                                                    playerIsTarget.Levens--;
-                                                    MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - sExitMsg.Length / 2, ConsoleColor.Red, msg: $"1 leven verloren, nog {playerIsTarget.Levens} te gaan");
-                                                    Console.ReadKey(true);
+                                                    if (playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] is Player playerIsTarget)
+                                                    {
+                                                        if (playerIsTarget.Levens > 1)
+                                                        {
+                                                            playerIsTarget.Levens--;
+                                                            MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - sExitMsg.Length / 2, ConsoleColor.Red, msg: $"1 leven verloren, nog {playerIsTarget.Levens} te gaan");
+                                                            Console.ReadKey(true);
+                                                        }
+                                                        else
+                                                        {
+                                                            playerIsTarget = null;
+                                                            sExitMsg = "Je hebt verloren!";
+                                                            bGameExit = true;
+                                                        }
+                                                    }
+                                                    playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] = null;
                                                 }
-                                                else
-                                                {
-                                                    playerIsTarget = null;
-                                                    sExitMsg = "Je hebt verloren!";
-                                                    bGameExit = true;
-                                                }
-                                            }
-                                            playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] = null;
+
                                         }
                                         break;
                                 }
-                            }else
+                            }
+                            else
+                            {
                                 if (obj is Monster monster)
                                 {
                                     switch (rnd_4.RandomNumber())
                                     {
-                                        case 1: monster.MoveUp(); break;
-                                        case 2: monster.MoveDown(); break;
-                                        case 3: monster.MoveLeft(); break;
-                                        case 4: monster.MoveRight(); break;
+                                        case 1:
+                                            {
+                                                if (monster.Location.X > 0)
+                                                    if (playground[monster.Location.X - 1, monster.Location.Y] == null)
+                                                        monster.MoveUp();
+                                            }
+                                            break;
+                                        case 2:
+                                            {
+                                                if (monster.Location.X < maxX - 1)
+                                                    if (playground[monster.Location.X + 1, monster.Location.Y] == null)
+                                                        monster.MoveDown();
+                                                    else
+
+                                            }
+                                            break;
+                                        case 3:
+                                            {
+                                                if (monster.Location.Y > 0)
+                                                    if (playground[monster.Location.X, monster.Location.Y - 1] == null)
+                                                        monster.MoveLeft();
+                                            }
+                                            break;
+                                        case 4:
+                                            {
+                                                if (monster.Location.Y < maxY - 1)
+                                                    if (playground[monster.Location.X, monster.Location.Y + 1] == null)
+                                                        monster.MoveRight();
+                                            }
+                                            break;
                                     }
+                                }
                             }
+                            
+                                
+
+                                
+                           
                         }
                     }
+                    if (sExitMsg != null)
+                    {
+                        MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - sExitMsg.Length / 2, bGewonnen ? ConsoleColor.Yellow : ConsoleColor.Red, msg: sExitMsg);
+                        Console.ReadKey();
+                    }
                 }
-                MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - sExitMsg.Length / 2, bGewonnen?ConsoleColor.Yellow:ConsoleColor.Red, msg: sExitMsg);
-                Console.ReadKey();
             }
             void MsgXY(int x, int y, ConsoleColor fg = ConsoleColor.White, ConsoleColor bg = ConsoleColor.Black, params string[] msg)
             {
