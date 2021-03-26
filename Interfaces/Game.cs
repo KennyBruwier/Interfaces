@@ -12,6 +12,7 @@ namespace Interfaces
     }
     interface IMoveable
     {
+        Point Location { get; set; }
         void MoveDown();
         void MoveLeft();
         void MoveRight();
@@ -24,6 +25,11 @@ namespace Interfaces
         public Point(char drawChar, int x, int y) : base(drawChar)
         {
             drawChar = drawChar;
+            X = x;
+            Y = y;
+        }
+        public Point(int x, int y)
+        {
             X = x;
             Y = y;
         }
@@ -46,7 +52,7 @@ namespace Interfaces
             ConsoleColor fKleur = Console.ForegroundColor;
             Console.ForegroundColor = kleur;
             Console.SetCursorPosition(Location.Y,Location.X);
-            Console.Write(drawChar);
+            Console.Write($"{drawChar}");
             Console.ForegroundColor = fKleur;
         }
 
@@ -54,12 +60,17 @@ namespace Interfaces
         {
             this.drawChar = drawChar;
         }
+        public MapElement()
+        {
+
+        }
         public void Shoot(ConsoleColor kleur)
         {
             ConsoleColor fKleur = Console.ForegroundColor;
             Console.ForegroundColor = kleur;
             Console.SetCursorPosition(Location.Y+1, Location.X);
             Console.Write('▒');
+            System.Threading.Thread.Sleep(10);
             Console.ForegroundColor = fKleur;
         }
         public void MoveUp()
@@ -68,7 +79,7 @@ namespace Interfaces
         }
         public void MoveDown()
         {
-            if (Location.X < MaxX) Location.X++;
+            if (Location.X < MaxX-1) Location.X++;
         }
         public void MoveLeft()
         {
@@ -76,7 +87,7 @@ namespace Interfaces
         }
         public void MoveRight()
         {
-            if (Location.Y < MaxY) Location.Y++;
+            if (Location.Y < MaxY-1) Location.Y++;
         }
     }
     class Monster : MapElement, IMoveable

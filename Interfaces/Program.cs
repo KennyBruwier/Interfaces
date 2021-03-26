@@ -11,41 +11,22 @@ namespace Interfaces
         static void Main(string[] args)
         {
             List<string> Oefeningen = new List<string>();
-
-            //string[] Oefeningen = ne
+            Console.OutputEncoding = Encoding.UTF8;
             Oefeningen = new List<string>();
             Oefeningen.Add("Exit");
             Oefeningen.Add("Figures with interfaces");
             Oefeningen.Add("Game");
-            //Oefeningen.Add("Bank");
-            //Oefeningen.Add("Pokemon (advanced)");
-            //Oefeningen.Add("Bookmark Manager (advanced)");
-            //Oefeningen.Add("Book (advanced)");
-            //Oefeningen.Add("MoneyMoney (advanced)");
-            //Oefeningen.Add("GeometricFigures (advanced)");
-            //Oefeningen.Add("Dierentuin (advanced)");
             bool bExit = false;
             while (!bExit)
             {
                 Console.Clear();
-                Console.WriteLine("Overerving oefeningen:\n");
+                Console.WriteLine("Interfaces oefeningen:\n");
                 switch (SelectMenu(false,menu:Oefeningen.ToArray()) - 1)
                 {
                     case 0: bExit = true; break;
                     case 1: FiguresWithInterfaces(); break;
                     case 2: Game(); break;
-                    //case 3: Bank(); break;
-                    //case 4: Pokemon(); break;
-                    //case 5: BookMarkExtra(); break;
-                    //case 6: Book(); break;
-                    //case 7: MoneyMoney(); break;
-                    //case 8: GeometricFigures(); break;
-                    //case 9: Dierentuin(); break;
-                    //case 5: Pokemon(); break;
-                    //case 5: Pokemon(); break;
-                    //case 5: Pokemon(); break;
-                    default:
-                        break;
+                    default: break;
                 }
             }
             void FiguresWithInterfaces()
@@ -78,19 +59,25 @@ namespace Interfaces
             void Game()
             {
                 Console.Clear();
-                Rnd rnd = new Rnd(1, 30);
+                Rnd rnd = new Rnd(1, 15);
                 Rnd rnd_5 = new Rnd(1, 6);
                 Rnd rnd_4 = new Rnd(1, 4);
                 const int maxY = 20;
                 const int maxX = 20;
-                const int aantalMonsters = 10;
-                const int aantalRock = 20;
-                const int aantalRockDestroyers = 10;
+                const int aantalMonsters = 20;
+                const int aantalRock = 60;
+                const int aantalRockDestroyers = 30;
                 MapElement[,] playground = new MapElement[maxX,maxY];
-
+                List<MapElement> mapElements = new List<MapElement>();
                 int iRocks = 0;
                 int iMonsters = 0;
                 int iDestroyers = 0;
+                bool bGameExit = false;
+                bool bGewonnen = false;
+                string sExitMsg = null;
+                int cursX;
+                int cursY;
+                int iMenu = 1;
                 for (int i = 0; i < maxX; i++)
                 {
                     for (int j = 0; j < maxY; j++)
@@ -103,33 +90,39 @@ namespace Interfaces
                                     {
                                         if (iMonsters < aantalMonsters)
                                         {
-                                            playground[i, j] = new Monster('M');
-                                            playground[i, j].Location = new Point('M', i, j);
-                                            playground[i, j].MaxX = maxX;
-                                            playground[i, j].MaxY = maxY;
                                             iMonsters++;
+                                            Monster monster = new Monster('M');
+                                            monster.Location = new Point(i, j);
+                                            monster.MaxX = maxX;
+                                            monster.MaxY = maxY;
+                                            if (mapElements == null) mapElements = new List<MapElement>();
+                                            mapElements.Add(monster);
                                         }
                                     }break;
                                 case 5:
                                     {
                                         if (iRocks < aantalRock)
                                         {
-                                            playground[i, j] = new Rock('O');
-                                            playground[i, j].Location = new Point('O', i, j);
-                                            playground[i, j].MaxX = maxX;
-                                            playground[i, j].MaxY = maxY;
                                             iRocks++;
+                                            Rock rock = new Rock('O');
+                                            rock.Location = new Point(i, j);
+                                            rock.MaxX = maxX;
+                                            rock.MaxY = maxY;
+                                            if (mapElements == null) mapElements = new List<MapElement>();
+                                            mapElements.Add(rock);
                                         }
                                     }break;
                                 case 10:
                                     {
                                         if (iDestroyers < aantalRockDestroyers)
                                         {
-                                            playground[i, j] = new RockDestroyer('D');
-                                            playground[i, j].Location = new Point('D', i, j);
-                                            playground[i, j].MaxX = maxX;
-                                            playground[i, j].MaxY = maxY;
                                             iDestroyers++;
+                                            RockDestroyer rock = new RockDestroyer('D');
+                                            rock.Location = new Point(i, j);
+                                            rock.MaxX = maxX;
+                                            rock.MaxY = maxY;
+                                            if (mapElements == null) mapElements = new List<MapElement>();
+                                            mapElements.Add(rock);
                                         }
                                     }
                                     break;
@@ -137,26 +130,43 @@ namespace Interfaces
                         }
                     }
                 }
-                bool bGameExit = false;
-                bool bGewonnen = false;
-                string sExitMsg = null;
-                int cursX;
-                int cursY;
-                int iMenu = 1;
-                playground[maxX / 2, 0] = new Player('X');
-                playground[maxX / 2, 0].Location = new Point('X', maxX / 2,0);
-                playground[maxX / 2, 0].MaxX = maxX;
-                playground[maxX / 2, 0].MaxY = maxY;
-                playground[maxX / 2, 0].Draw();
+                Player newPlayer = new Player('X');
+                newPlayer.Location = new Point(maxX / 2, 0);
+                newPlayer.MaxX = maxX;
+                newPlayer.MaxY = maxY;
+                newPlayer.Levens = 3;
+                mapElements.Add(newPlayer);
                 while (!bGameExit)
                 {
                     Console.Clear();
+                    playground = new MapElement[maxX, maxY];
+                    foreach (var mapElement in mapElements)
+                    {
+                        switch (mapElement)
+                        {
+                            case IMoveable moveable:
+                                {
+                                    playground[moveable.Location.X, moveable.Location.Y] = mapElement;
+                                }
+                                break;
+                            case Rock rock:
+                                {
+                                    playground[rock.Location.X, rock.Location.Y] = mapElement;
+                                    //if ((rock.Location.X == i) && (rock.Location.Y == j))
+                                    //    playground[i, j] = rock;
+                                }
+                                break;
+                        }
+
+                    }
                     cursX = Console.CursorTop;
                     cursY = Console.CursorLeft;
                     for (int i = 0; i < maxX; i++)
                     {
                         for (int j = 0; j < maxY; j++)
                         {
+                            
+                            
                             if (playground[i, j] != null)
                             {
                                 playground[i, j].Draw();
@@ -170,166 +180,215 @@ namespace Interfaces
                     {
                         foreach (object obj in playground)
                         {
-                            if (obj is Player player)
+                            switch (obj)
                             {
-                                switch(iMenu)
-                                {
-                                    case 1:
+                                case Player player:
+                                    {
+                                        switch (iMenu)
                                         {
-                                            if (player.Location.X > 0)
-                                                if (playground[(player.Location.X-1), player.Location.Y] == null)
-                                                    player.MoveUp(); 
-                                        }                                            
-                                        break;
-                                    case 2:
-                                        {
-                                            if (player.Location.X < maxX-1)
-                                                if (playground[player.Location.X+1,player.Location.Y] == null)
-                                                    player.MoveDown(); 
-                                        }
-                                        break;
-                                    case 3:
-                                        {
-                                            if (player.Location.Y < maxY-1)
-                                                if(playground[player.Location.X, player.Location.Y+1] == null)
+                                            case 1:
                                                 {
-                                                    player.MoveRight();
-                                                    if (player.Location.Y == maxY-1)
+                                                    if (player.Location.X > 0)
+                                                        if (playground[(player.Location.X - 1), player.Location.Y] == null)
+                                                            player.MoveUp();
+                                                }
+                                                break;
+                                            case 2:
+                                                {
+                                                    if (player.Location.X < maxX - 1)
+                                                        if (playground[player.Location.X + 1, player.Location.Y] == null)
+                                                            player.MoveDown();
+                                                }
+                                                break;
+                                            case 3:
+                                                {
+                                                    if (player.Location.Y < maxY - 1)
+                                                        if (playground[player.Location.X, player.Location.Y + 1] == null)
+                                                        {
+                                                            player.MoveRight();
+                                                            if (player.Location.Y == maxY - 1)
+                                                            {
+                                                                bGameExit = true;
+                                                                bGewonnen = true;
+                                                                sExitMsg = "Je hebt gewonnen!";
+                                                            }
+                                                        }
+                                                }
+                                                break;
+                                            case 4:
+                                                {
+                                                    if (player.Location.Y > 0)
+                                                        if (playground[player.Location.X, player.Location.Y - 1] == null)
+                                                            player.MoveLeft();
+                                                }
+                                                break;
+                                            case 5:
+                                                {
+                                                    player.Shoot(ConsoleColor.Red);
+
+                                                    int iDelete = -1;
+                                                    bool bDestroyed = false;
+                                                    iDelete = mapElements.IndexOf(playground[player.Location.X, player.Location.Y + 1]);
+                                                    switch (playground[player.Location.X, player.Location.Y + 1])
                                                     {
+                                                        case Monster monster:
+                                                            {
+                                                                if (monster.Levens > 0)
+                                                                    monster.Levens--;
+                                                                else
+                                                                    bDestroyed = true;
+                                                            }
+                                                            break;
+                                                        case Rock rock:
+                                                            {
+                                                                bDestroyed = true;
+                                                            }
+                                                            break;
+                                                    }
+                                                    if (bDestroyed)
+                                                    {
+                                                        iDelete = -1;
+                                                        iDelete = mapElements.IndexOf(playground[player.Location.X, player.Location.Y + 1]);
+                                                        if (iDelete > 0)
+                                                        {
+                                                            mapElements.RemoveAt(iDelete);
+                                                        }
+                                                        playground[player.Location.X, player.Location.Y + 1] = null;
+                                                    }
+
+                                                    //foreach (MapElement mapElement in mapElements)
+                                                    //{
+                                                    //    if ((mapElement.Location.X == player.Location.X) && (mapElement.Location.Y == player.Location.Y + 1))
+                                                    //    {
+                                                    //        if (mapElement is Rock) iDelete = mapElements.IndexOf(mapElement);
+                                                    //        if (mapElement is Monster monster)
+                                                    //        {
+                                                    //            if (monster.Levens > 0) monster.Levens--;
+                                                    //            else iDelete = mapElements.IndexOf(monster);
+                                                    //        }
+                                                    //    }
+                                                    //    if (iDelete > 0) break;
+                                                    //}
+                                                    //playground[player.Location.X, player.Location.Y + 1] = null;
+                                                    //if (iDelete > 0)
+                                                    //{
+                                                    //    mapElements.RemoveAt(iDelete);
+                                                    //}
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case RockDestroyer rockDestroyer:
+                                    {
+                                        bool bAlGeschoten = false;
+                                        for (int i = (rockDestroyer.Location.X - 1) < 0 ? 0 : rockDestroyer.Location.X - 1; i < ((rockDestroyer.Location.X + 1) > maxX ? maxX : rockDestroyer.Location.X + 1); i++)
+                                        {
+                                            for (int j = (rockDestroyer.Location.Y - 1) < 0 ? 0 : rockDestroyer.Location.Y - 1; j < ((rockDestroyer.Location.Y + 1) > maxY ? maxY : rockDestroyer.Location.Y + 1); j++)
+                                            {
+
+                                                bool bGeschoten = false;
+                                                if (playground[i, j] is Rock rockIsTarget)
+                                                {
+                                                    bGeschoten = true;
+                                                    int iIndex = mapElements.IndexOf(rockIsTarget);
+                                                    mapElements.RemoveAt(mapElements.IndexOf(rockIsTarget));
+                                                }
+                                                if (playground[i, j] is Player playerIsTarget)
+                                                {
+                                                    bGeschoten = true;
+                                                    if (playerIsTarget.Levens > 1)
+                                                    {
+                                                        playerIsTarget.Levens--;
+                                                        MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - $"1 leven verloren, nog {playerIsTarget.Levens} te gaan".Length / 2, ConsoleColor.Red, msg: $"1 leven verloren, nog {playerIsTarget.Levens} te gaan");
+                                                        Console.ReadKey(true);
+                                                    }
+                                                    else
+                                                    {
+                                                        playerIsTarget = null;
+                                                        sExitMsg = "Je hebt verloren!";
                                                         bGameExit = true;
-                                                        bGewonnen = true;
-                                                        sExitMsg = "Je hebt gewonnen!";
                                                     }
                                                 }
-                                            
-                                        }
-                                        break;
-                                    case 4:  
-                                        {
-                                            if (player.Location.Y > 0)
-                                                if (playground[player.Location.X,player.Location.Y-1] == null)
-                                                        player.MoveLeft();
-                                        }
-                                        break;
-                                    case 5:
-                                        {
-                                            player.Shoot(ConsoleColor.Red);
-                                            playground[player.Location.X, player.Location.Y + 1] = null;
-                                        }
-                                        break;
-
-                                }
-                            }
-                            if (obj is RockDestroyer rockDestroyer)
-                            {
-                                //int temp = rnd_5.RandomNumber();
-                                //{
-                                //    //if (temp > 4)
-                                //        //Console.ReadKey(true);
-                                //}
-                                switch (rnd_5.RandomNumber())
-                                {
-                                    case 1:
-                                        {
-                                            if (rockDestroyer.Location.X > 0)
-                                                if (playground[rockDestroyer.Location.X-1,rockDestroyer.Location.Y]==null)
-                                                    rockDestroyer.MoveUp();
-                                        }
-                                        break;
-                                    case 2:
-                                        {
-                                            if (rockDestroyer.Location.X < maxX-1)
-                                                if (playground[rockDestroyer.Location.X+1,rockDestroyer.Location.Y] == null)
-                                                    rockDestroyer.MoveDown(); 
-                                        }
-                                        break;
-                                    case 3:
-                                        {
-                                        if (rockDestroyer.Location.Y > 0)
-                                            if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y-1] == null)
-                                                rockDestroyer.MoveLeft(); 
-                                        }
-                                        break;
-                                    case 4:
-                                        {
-                                        if (rockDestroyer.Location.Y < maxY-1)
-                                            if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y+1] == null)
-                                                rockDestroyer.MoveRight(); 
-                                        }
-                                        break;
-                                    case 5:
-                                        {
-                                            if (rockDestroyer.Location.Y < maxY-1)
-                                                if (playground[rockDestroyer.Location.X,rockDestroyer.Location.Y+1] != null)
+                                                if (bGeschoten && !bGameExit)
                                                 {
                                                     rockDestroyer.Shoot(ConsoleColor.Red);
-
-                                                    if (playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] is Player playerIsTarget)
-                                                    {
-                                                        if (playerIsTarget.Levens > 1)
-                                                        {
-                                                            playerIsTarget.Levens--;
-                                                            MsgXY(Console.WindowHeight / 2, Console.WindowWidth / 2 - sExitMsg.Length / 2, ConsoleColor.Red, msg: $"1 leven verloren, nog {playerIsTarget.Levens} te gaan");
-                                                            Console.ReadKey(true);
-                                                        }
-                                                        else
-                                                        {
-                                                            playerIsTarget = null;
-                                                            sExitMsg = "Je hebt verloren!";
-                                                            bGameExit = true;
-                                                        }
-                                                    }
-                                                    playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] = null;
+                                                    bAlGeschoten = true;
                                                 }
-
+                                            }
                                         }
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                if (obj is Monster monster)
-                                {
-                                    switch (rnd_4.RandomNumber())
-                                    {
-                                        case 1:
+                                        if (!bAlGeschoten)
+                                        {
+                                            switch (rnd_5.RandomNumber())
                                             {
-                                                if (monster.Location.X > 0)
-                                                    if (playground[monster.Location.X - 1, monster.Location.Y] == null)
-                                                        monster.MoveUp();
+                                                case 1:
+                                                    {
+                                                        if (rockDestroyer.Location.X > 0)
+                                                            if (playground[rockDestroyer.Location.X - 1, rockDestroyer.Location.Y] == null)
+                                                                rockDestroyer.MoveUp();
+                                                    }
+                                                    break;
+                                                case 2:
+                                                    {
+                                                        if (rockDestroyer.Location.X < maxX - 1)
+                                                            if (playground[rockDestroyer.Location.X + 1, rockDestroyer.Location.Y] == null)
+                                                                rockDestroyer.MoveDown();
+                                                    }
+                                                    break;
+                                                case 3:
+                                                    {
+                                                        if (rockDestroyer.Location.Y > 0)
+                                                            if (playground[rockDestroyer.Location.X, rockDestroyer.Location.Y - 1] == null)
+                                                                rockDestroyer.MoveLeft();
+                                                    }
+                                                    break;
+                                                case 4:
+                                                    {
+                                                        if (rockDestroyer.Location.Y < maxY - 1)
+                                                            if (playground[rockDestroyer.Location.X, rockDestroyer.Location.Y + 1] == null)
+                                                                rockDestroyer.MoveRight();
+                                                    }
+                                                    break;
                                             }
-                                            break;
-                                        case 2:
-                                            {
-                                                if (monster.Location.X < maxX - 1)
-                                                    if (playground[monster.Location.X + 1, monster.Location.Y] == null)
-                                                        monster.MoveDown();
-                                                    else
-
-                                            }
-                                            break;
-                                        case 3:
-                                            {
-                                                if (monster.Location.Y > 0)
-                                                    if (playground[monster.Location.X, monster.Location.Y - 1] == null)
-                                                        monster.MoveLeft();
-                                            }
-                                            break;
-                                        case 4:
-                                            {
-                                                if (monster.Location.Y < maxY - 1)
-                                                    if (playground[monster.Location.X, monster.Location.Y + 1] == null)
-                                                        monster.MoveRight();
-                                            }
-                                            break;
+                                        }
                                     }
-                                }
+                                    break;
+                                case Monster monster:
+                                    {
+                                        switch (rnd_4.RandomNumber())
+                                        {
+                                            case 1:
+                                                {
+                                                    if (monster.Location.X > 0)
+                                                        if (playground[monster.Location.X - 1, monster.Location.Y] == null)
+                                                            monster.MoveUp();
+                                                }
+                                                break;
+                                            case 2:
+                                                {
+                                                    if (monster.Location.X < maxX - 1)
+                                                        if (playground[monster.Location.X + 1, monster.Location.Y] == null)
+                                                            monster.MoveDown();
+                                                }
+                                                break;
+                                            case 3:
+                                                {
+                                                    if (monster.Location.Y > 0)
+                                                        if (playground[monster.Location.X, monster.Location.Y - 1] == null)
+                                                            monster.MoveLeft();
+                                                }
+                                                break;
+                                            case 4:
+                                                {
+                                                    if (monster.Location.Y < maxY - 1)
+                                                        if (playground[monster.Location.X, monster.Location.Y + 1] == null)
+                                                            monster.MoveRight();
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    break;
                             }
-                            
-                                
-
-                                
-                           
                         }
                     }
                     if (sExitMsg != null)
@@ -418,7 +477,6 @@ namespace Interfaces
                         Console.SetCursorPosition(0, 0);
                     else Console.SetCursorPosition(cursLeft, cursTop);
                 }
-                Console.Clear();
                 Console.CursorVisible = true;
                 return selection;
             }
